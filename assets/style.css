@@ -1,0 +1,31 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+}
+body {
+    margin-top: 82px;
+}
+.center {
+    position: absolute;
+    left: 50%;
+    text-align: center;
+    width: 750px;
+    max-width: calc(100% - 10px);
+    transform: translate(-50%,0%);
+
+}
+.card {
+    border: none;
+}
+.smoll {
+    font-size: 14px;
+}
+a {
+    text-decoration: none;
+}
+.stack-h {
+    display: inline-block;
+}

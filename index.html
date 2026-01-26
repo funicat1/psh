@@ -4,8 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poly shell</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body>
-    <h1>soon or later</h1>
+    <nav class="navbar bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+        <img src="assets/icon.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
+        Poly shell
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="#">Connect</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+    </nav>
+    <div class="center">
+        <div class="card mb-3" style="max-height: 440px;">
+            <div class="row g-0">
+                <div class="col-md-4">
+                <img src="assets/icon-small.png" class="img-fluid rounded-start" alt="Poly shell logo">
+                </div>
+                <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title" id="pshellcardtitle">Poly shell</h5>
+                    <p class="card-text" id="pshellcardtext">Poly shell is SSH, but over the internet without a require for port forwarding.</p>
+                    <p class="card-text"><a href="https://github.com/funicat1/psh"><i class="bi bi-github"></i> Github</a></p>
+                    <button type="button" class="btn btn-link" onclick="change()"
+                            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    Click me to change
+                    </button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <h3>Clients</h3>
+        <div class="stack-h">
+            <button type="button" class="btn btn-primary"><i class="bi bi-browser-chrome"></i> <i class="bi bi-browser-firefox"></i> <i class="bi bi-browser-safari"></i> Browser client</button>
+            <br>
+            <small class="text-body-secondary smoll">Any browser higher than IE</small>
+        </div>
+        <br><br>
+        <h3>Server downloads</h3>
+        <div class="stack-h">
+            <button type="button" class="btn btn-primary" disabled><i class="bi bi-microsoft"></i> Download for Windows</button>
+            <br>
+            <small class="text-body-secondary smoll">Windows 10 and above</small>
+        </div>
+        <div class="stack-h">
+            <button type="button" class="btn btn-secondary" disabled><i class="bi bi-pip"></i> Python package</button>
+            <br>
+            <small class="text-body-secondary smoll">Python 3.9+</small>
+        </div>
+        <div class="stack-h">
+            <button type="button" class="btn btn-secondary"><i class="bi bi-filetype-py"></i> Python script</button>
+            <br>
+            <small class="text-body-secondary smoll">Python 3.9+</small>
+        </div>
+        
+    </div>
+    <script src="assets/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
