@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poly shell client</title>
+    <link rel="stylesheet" href="assets/client.css">
+    <script src="node_modules/@xterm/xterm/lib/xterm.js"></script>
+    <link rel="stylesheet" href="node_modules/@xterm/xterm/css/xterm.css" />
+</head>
+<body>
+    <div id="tabs">
+        <div id="tabs2">
+            <div class="tab active">
+                <img src="assets/terminal.svg" class="icon">
+                <div class="title">
+                    tab
+                </div>
+                <button class="close">X</button>
+            </div>
+            <div class="tab">
+                <img src="assets/terminal.svg" class="icon">
+                <div class="title">
+                    tab
+                </div>
+                <button class="close">X</button>
+            </div>
+            
+        </div>
+        <button id="newtab" onclick="newtabadd()">+</button>
+    </div>
+    <div id="views">
+        
+    </div>
+    <script src="assets/client.js"></script>
+</body>
+</html>

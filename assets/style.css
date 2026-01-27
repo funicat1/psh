@@ -29,3 +29,6 @@ a {
 .stack-h {
     display: inline-block;
 }
+* {
+    border-radius: 0 !important;
+}

@@ -17,7 +17,7 @@
     <meta property="og:site_name" content="Poly Shell">
 
 </head>
-<body>
+<body data-bs-theme="dark">
     <nav class="navbar bg-body-tertiary">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -43,30 +43,26 @@
         <div class="card mb-3" style="max-height: 440px;">
             <div class="row g-0">
                 <div class="col-md-4">
-                <img src="assets/icon-small.png" class="img-fluid rounded-start" alt="Poly shell logo">
+                <img id="pshellcardicon" src="assets/icon-small.png" class="img-fluid rounded-start" alt="Poly shell logo">
                 </div>
                 <div class="col-md-8">
                 <div class="card-body">
                     <h5 class="card-title" id="pshellcardtitle">Poly shell</h5>
                     <p class="card-text" id="pshellcardtext">Poly shell is SSH, but over the internet without a require for port forwarding.</p>
                     <p class="card-text"><a href="https://github.com/funicat1/psh"><i class="bi bi-github"></i> Github</a></p>
-                    <button type="button" class="btn btn-link" onclick="change()"
-                            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-                    Click me to change
-                    </button>
                 </div>
                 </div>
             </div>
         </div>
         <br>
-        <h3>Clients</h3>
+        <h3><img src="assets/icon-small.png" alt="polyverta" width="32" height="32"> Clients</h3>
         <div class="stack-h">
-            <button type="button" class="btn btn-primary"><i class="bi bi-browser-chrome"></i> <i class="bi bi-browser-firefox"></i> <i class="bi bi-browser-safari"></i> Browser client</button>
+            <button type="button" class="btn btn-primary" onclick="window.location.href = 'client.html'"><i class="bi bi-browser-chrome"></i> Browser client</button>
             <br>
-            <small class="text-body-secondary smoll">Any browser higher than IE</small>
+            <small class="text-body-secondary smoll">Any modern browser</small>
         </div>
         <br><br>
-        <h3>Server downloads</h3>
+        <h3><img src="assets/polyverta.png" alt="polyverta" width="32" height="32"> Server downloads</h3>
         <div class="stack-h">
             <button type="button" class="btn btn-primary" disabled><i class="bi bi-microsoft"></i> Download for Windows</button>
             <br>
@@ -80,7 +76,7 @@
         <div class="stack-h">
             <button type="button" class="btn btn-secondary"><i class="bi bi-filetype-py"></i> Python script</button>
             <br>
-            <small class="text-body-secondary smoll">Python 3.9+</small>
+            <small class="text-body-secondary smoll">Same thing</small>
         </div>
         
     </div>
