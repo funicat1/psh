@@ -12,3 +12,10 @@ function change() {
         document.getElementById("pshellcardicon").src = "assets/icon-small.png"
     }
 }
+function download(path) {
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = path;
+    document.body.appendChild(a);
+    a.click();
+}
