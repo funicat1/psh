@@ -98,3 +98,75 @@ body,html {
     height: calc(100% - 50px);
     background-color: #1a1c27;
 }
+#connectmodalbg {
+    background-color: rgba(0, 0, 0, 0.432);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+#connectmodal {
+    position: absolute;
+    background-color: #fcfdff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    color: #222430;
+    border-radius: 24px;
+}
+#code {
+    border-radius: 100px;
+    border: 1px solid #222430;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 0px;
+    margin-left: 5px;
+}
+h2 { 
+    margin: 0;
+    margin-bottom: 10px;
+}
+#connectbtn {
+    float: right;
+    margin-top: 6px;
+    background-color: #546eff;
+    color: white;
+    padding: 8px 14px 8px 14px;
+    border: none;
+    font-size: 14px;
+    border-radius: 32px;
+    cursor: pointer;
+ /* world: hello;                          */
+    height: fit-content;
+}
+#content2,#content1 {
+    text-overflow: clip;
+    overflow: hidden;
+}
+#content2.transition { 
+    animation: fade-in .5s ease-in-out forwards;
+}
+#content1.transition {
+    animation: fade-out .5s ease-in-out forwards;
+}
+#content2:not(.transition) {
+    height: 0px;
+}
+@keyframes fade-out {
+    0% {
+        height: 104px;
+    }
+    100% {
+        height: 0px;
+    }
+}
+@keyframes fade-in {
+    0% {
+        height: 0px; 
+    }
+    100% {
+        height: 30px;
+    }
+}

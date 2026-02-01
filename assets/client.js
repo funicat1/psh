@@ -1,54 +1,9 @@
 activetab = null
-function printAllColors(term) {
-  const write = s => term.write(s);
-  const nl = () => write('\r\n');
-  const pad = n => String(n).padStart(3, ' ');
+const client = supabase.createClient('https://lfetrsnlliovdavlnejg.supabase.co', 'sb_publishable_H_1KsFUculPC6j78TcMAdg_0sXxxnTl')
 
-  term.clear();
-
-  // --- 16 basic colors (fg)
-  write('\x1b[1m16 colors (foreground)\x1b[0m\r\n');
-  for (let i = 0; i < 16; i++) {
-    write(`\x1b[38;5;${i}m ${pad(i)} fg \x1b[0m `);
-    if ((i + 1) % 4 === 0) nl();
-  }
-  nl();
-
-  // --- 16 basic colors (bg)
-  write('\x1b[1m16 colors (background)\x1b[0m\r\n');
-  for (let i = 0; i < 16; i++) {
-    write(`\x1b[48;5;${i}m\x1b[38;5;${i < 8 ? 15 : 0}m ${pad(i)} bg \x1b[0m `);
-    if ((i + 1) % 4 === 0) nl();
-  }
-  nl();
-
-  // --- 256 color palette
-  write('\x1b[1m256-color palette\x1b[0m\r\n');
-  for (let i = 0; i < 256; i++) {
-    const fg = i < 16 ? 15 : (i % 2 ? 0 : 15);
-    write(`\x1b[48;5;${i}m\x1b[38;5;${fg}m ${pad(i)} \x1b[0m`);
-    if ((i + 1) % 16 === 0) nl();
-    else write(' ');
-  }
-  nl();
-
-  // --- truecolor gradient (rgb sweep)
-  write('\x1b[1mtruecolor rgb gradient\x1b[0m\r\n');
-  for (let r = 0; r <= 255; r += 32) {
-    for (let g = 0; g <= 255; g += 32) {
-      for (let b = 0; b <= 255; b += 32) {
-        write(`\x1b[48;2;${r};${g};${b}m   \x1b[0m`);
-      }
-      write(' ');
-    }
-    nl();
-  }
-
-  nl();
-  write('\x1b[3mdone.\x1b[0m\r\n');
-}
 mapping = {}
-function newtabadd() {
+
+function newtabadd(vertex) {
     var page = document.createElement("div")
     var term = new Terminal({
     theme: {
@@ -123,11 +78,15 @@ function newtabadd() {
         document.getElementById("views").lastChild.classList.add("active")
       }
     }
-    
+    var id = crypto.randomUUID()
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
+	vertex.send({
+      type: "broadcast",
+      event: "action",
+      payload: { "type": "new", "id": id }, // Client provides the id, not server.
+    })
     
-    term.write("guhh")
     document.getElementById("views").appendChild(page)
     window.addEventListener("resize",function() {
         fitAddon.fit()
@@ -136,4 +95,38 @@ function newtabadd() {
         fitAddon.fit()
     })
 }
-newtabadd()
+
+document.getElementById("connectbtn").onclick = function() {
+	var code = document.getElementById("code").value
+	if (code.length !== 8) {
+		alert("Code too short.")
+	} else if (!(/^\d+$/.test(code))) {
+		alert("Code must be all numbers.")
+	} else {
+		document.getElementById("content1").classList.add("transition")
+		document.getElementById("content2").classList.add("transition")
+		const channel = client.channel(code)
+		channel.on("broadcast", { event: "token" }, (payload) => {
+			console.log(payload)
+			const vertex = client.channel(payload["payload"]["token"])
+			// disconnect from first
+			client.removeChannel(channel)
+			vertex.on("broadcast", { event: "data" }, (payload) => {
+				
+			}).subscribe((status) => {
+			if (status === "SUBSCRIBED") {
+				newtabadd(vertex)
+			}
+			})
+		}).subscribe((status) => {
+		if (status === "SUBSCRIBED") {
+			channel.send({
+			type: "broadcast",
+			event: "join",
+			payload: { },
+			});
+		}
+		});
+	}
+	
+}

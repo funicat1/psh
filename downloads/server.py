@@ -1,15 +1,11 @@
-logo = """▄▄▄▄▄▄▄         ▄▄                                    
-███▀▀███▄       ██                          ██        
-███▄▄███▀ ▄███▄ ██ ██ ██ ██ ██ ▄█▀█▄ ████▄ ▀██▀▀ ▀▀█▄ 
-███▀▀▀▀   ██ ██ ██ ██▄██ ██▄██ ██▄█▀ ██ ▀▀  ██  ▄█▀██ 
-███       ▀███▀ ██  ▀██▀  ▀█▀  ▀█▄▄▄ ██     ██  ▀█▄██ 
-                     ██                               
-                   ▀▀▀                                
+logo = """                                                      
+                                                      
+█████▄  ▄▄▄  ▄▄  ▄▄ ▄▄ ▄▄ ▄▄ ▄▄▄▄▄ ▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄   
+██▄▄█▀ ██▀██ ██  ▀███▀ ██▄██ ██▄▄  ██▄█▄   ██  ██▀██  
+██     ▀███▀ ██▄▄▄ █    ▀█▀  ██▄▄▄ ██ ██   ██  ██▀██  
+                                                      
 """
-
-print("sorry, not done yet.")
-exit()
-import os
+import os,base64,threading
 import asyncio,secrets,sys,random,time
 from supabase import acreate_client, AsyncClient
 import supabase as sb
@@ -57,6 +53,36 @@ async def create_supabase():
 	supabase: AsyncClient = await acreate_client(url, key)
 	return supabase
 
+if sys.platform == "win32":
+	from winpty import PTY
+elif sys.platform == "linux":
+	pass
+else:
+	raise SystemError("Unknown OS, Polyverta cant run.")
+
+class Winpty: # Windows PTY.
+	def __init__(self,pty: PTY):
+		self.pty = pty
+		self.pty.spawn(r'C:\windows\system32\cmd.exe')
+	def resize(self,w,h):
+		self.pty.set_size(w,h)
+	def dispose(self):
+		del self.pty
+	def write(self,bytes):
+		self.pty.write(bytes)
+	def read(self):
+		return self.pty.read()
+		
+
+def newpty():
+	if sys.platform == "win32":
+		log.info("Running on win32 - using winpty to create a pty.")
+		return Winpty(PTY(80, 25))
+	elif sys.platform == "linux":
+		log.info("Running on linux - using pty to create a pty.")
+	else:
+		raise SystemError("Unknown OS, cant create a pty.")
+
 async def main():
 	log.info("Hello, World!")
 	log.info("Initializing supabase")
@@ -77,15 +103,27 @@ async def main():
 				time.sleep(1/50) # 1/50th of a second delay so supabase is happy
 		def handle(payload):
 			nonlocal terminals
-			if payload["type"] == "new":
-				terminals["id"] = newpty()
-			elif payload["type"] == "resize":
+			print(payload)
+			if payload["payload"]["type"] == "new":
+				terminals["payload"]["id"] = newpty()
+				threading.Thread(reader,daemon=True,args=(terminals["payload"]["id"],)).start()
+			elif payload["payload"]["type"] == "resize":
 				for i in terminals:
-					terminals[i].resize(int(payload["w"]),int(payload["h"]))
-			elif payload["type"] == "delete":
-				if payload["id"] in terminals:
-					terminals[payload["id"]].dispose()
-					del terminals[payload["id"]]
+					terminals[i].resize(int(payload["payload"]["w"]),int(payload["payload"]["h"]))
+			elif payload["payload"]["type"] == "delete":
+				if payload["payload"]["id"] in terminals:
+					terminals[payload["payload"]["id"]].dispose()
+					del terminals[payload["payload"]["id"]]
+			elif payload["payload"]["type"] == "write":
+				if payload["payload"]["id"] in terminals:
+					terminals[payload["payload"]["id"]].write(base64.b64decode(payload["payload"]["text"]))
+				else:
+					pass #??????????????????????????????????????????????
+		def handle_leave(key, current_presence, left_presence):
+			nonlocal terminals
+			for i in terminals: # dispose all terminals.
+				terminals[i].dispose()
+				del terminals[i]
 		def onsub_vert(status, err):
 			if status == "SUBSCRIBED":
 				asyncio.create_task(sch.send_broadcast(
@@ -96,7 +134,7 @@ async def main():
 		vertex = secrets.token_hex(24)
 		log.info("A client just joined!")
 		vch = supabase.channel(vertex)
-		asyncio.create_task(vch.on_broadcast(event="join", callback=handle).subscribe(onsub_vert))
+		asyncio.create_task(vch.on_presence_leave(callback=handle_leave).on_broadcast(event="action", callback=handle).subscribe(onsub_vert))
 	def onsub(status, err):
 		if status == "SUBSCRIBED":
 			log.info(f"Ready")
