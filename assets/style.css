@@ -28,6 +28,9 @@ a {
 }
 .stack-h {
     display: inline-block;
+    height: 40px;
+    vertical-align: middle;
+    /* i dont CARE if it overflows. its MEANT to. */
 }
 * {
     border-radius: 0 !important;
