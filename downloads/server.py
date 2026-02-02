@@ -11,6 +11,7 @@ import logging
 from rich.logging import RichHandler
 
 
+
 log = logging.getLogger("Polyverta")
 log.setLevel(logging.INFO)
 log.propagate = False
@@ -54,7 +55,12 @@ async def create_supabase():
 if sys.platform == "win32":
 	from winpty import PTY
 elif sys.platform == "linux":
-	pass
+	import fcntl
+	import struct
+	import termios
+	import signal
+	import select
+	import errno
 else:
 	raise SystemError("Unknown OS, Polyverta cant run.")
 
@@ -85,14 +91,81 @@ class Winpty: # Windows PTY.
 				 # it: hey, we are getting commited to a github repository, shut it
 				 # github: take this repo down
 				 # repo:
-		
+class LinuxPty:  # Linux PTY. i vibecoded it :3
+    def __init__(self, pty=None):
+        # ignore pty param, mimic api
+        self.master_fd = None
+        self.child_pid = None
+        self.spawn('/bin/bash')
+
+    def spawn(self, cmd):
+        pid, master = os.forkpty()
+        if pid == 0:
+            # child
+            os.execvp(cmd, [cmd])
+        else:
+            # parent
+            self.master_fd = master
+            self.child_pid = pid
+            flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
+            fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+    def resize(self, w, h):
+        if self.master_fd is None:
+            return
+        # struct: rows, cols, xpix, ypix
+        winsize = struct.pack("HHHH", h, w, 0, 0)
+        try:
+            fcntl.ioctl(self.master_fd, termios.TIOCSWINSZ, winsize)
+        except OSError:
+            pass
+
+    def dispose(self):
+        if self.master_fd:
+            try:
+                os.close(self.master_fd)
+            except OSError:
+                pass
+            self.master_fd = None
+        if self.child_pid:
+            try:
+                os.kill(self.child_pid, signal.SIGTERM)
+            except OSError:
+                pass
+            try:
+                os.waitpid(self.child_pid, 0)
+            except OSError:
+                pass
+            self.child_pid = None
+
+    def write(self, bytes_):
+        if self.master_fd is None:
+            return
+        try:
+            if isinstance(bytes_, bytes):
+                os.write(self.master_fd, bytes_)
+            else:
+                os.write(self.master_fd, str(bytes_).encode('utf-8'))
+        except OSError:
+            pass
+
+    def read(self):
+        if self.master_fd is None:
+            return b''
+        try:
+            r, _, _ = select.select([self.master_fd], [], [], 0)
+            if r:
+                return os.read(self.master_fd, 4096)
+        except OSError as e:
+            if e.errno not in (errno.EAGAIN, errno.EWOULDBLOCK):
+                pass
+        return b''
 
 def newpty():
 	if sys.platform == "win32":
-		log.info("Running on win32 - using winpty to create a pty.")
 		return Winpty(PTY(80, 25))
 	elif sys.platform == "linux":
-		log.info("Running on linux - using pty to create a pty.")
+		return LinuxPty()
 	else:
 		raise SystemError("Unknown OS, cant create a pty.")
 loop = None
