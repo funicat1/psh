@@ -1,9 +1,7 @@
-logo = """                                                      
-                                                      
+logo = """
 █████▄  ▄▄▄  ▄▄  ▄▄ ▄▄ ▄▄ ▄▄ ▄▄▄▄▄ ▄▄▄▄  ▄▄▄▄▄▄ ▄▄▄   
 ██▄▄█▀ ██▀██ ██  ▀███▀ ██▄██ ██▄▄  ██▄█▄   ██  ██▀██  
 ██     ▀███▀ ██▄▄▄ █    ▀█▀  ██▄▄▄ ██ ██   ██  ██▀██  
-                                                      
 """
 import os,base64,threading
 import asyncio,secrets,sys,random,time
