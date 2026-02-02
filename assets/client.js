@@ -161,13 +161,12 @@ document.getElementById("connectbtn").onclick = function() {
 				if (status === "SUBSCRIBED") {
 					newtabadd()
 					document.getElementById("connectmodalbg").style.display = "none"
-					setInterval(function() {
-						vertex.send({
-							type: "broadcast",
-							event: "beat",
-							payload: { },
-						})
-					},3000)
+					const worker = new Worker('assets/beat.js');
+					worker.onmessage = (e) => {
+						if(e.data.type === 'beat') {
+							vertex.send({ type: "broadcast", event: "beat", payload: {} });
+						}
+					};
 
 				}
 			})
