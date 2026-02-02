@@ -1,6 +1,16 @@
 activetab = null
 const client = supabase.createClient('https://lfetrsnlliovdavlnejg.supabase.co', 'sb_publishable_H_1KsFUculPC6j78TcMAdg_0sXxxnTl')
 var vertex = null
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const buffer = audioCtx.createBuffer(1, 1, 22050); // 1 channel, 1 sample
+const source = audioCtx.createBufferSource();
+source.buffer = buffer;
+source.loop = true;
+source.connect(audioCtx.destination);
+document.addEventListener('click', () => {
+    audioCtx.resume();
+    source.start();
+}, { once: true });
 mapping = {}
 idmap = {}
 function newtabadd() {
