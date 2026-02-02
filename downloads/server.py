@@ -188,7 +188,7 @@ async def main():
 					{"id": id,
 	  				 "content": content},
 				),loop)
-				time.sleep(1/50) # 1/50th of a second delay so supabase is happy
+				time.sleep(1/55) # 1/55th of a second delay so supabase is happy
 		def handle(payload):
 			global loop
 			nonlocal terminals
