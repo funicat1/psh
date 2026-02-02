@@ -67,9 +67,24 @@ class Winpty: # Windows PTY.
 	def dispose(self):
 		del self.pty
 	def write(self,bytes):
-		self.pty.write(bytes)
+		try:
+			self.pty.write(bytes.decode("utf-8"))
+		except:
+			pass
 	def read(self):
-		return self.pty.read()
+		try:
+			return self.pty.read()
+		except:
+			pass # race condition
+				 # race: hi
+				 # hi: condition
+				 # condition: cat
+				 # cat: funnycat
+				 # funicat: hi
+				 # hi: stop it
+				 # it: hey, we are getting commited to a github repository, shut it
+				 # github: take this repo down
+				 # repo:
 		
 
 def newpty():
@@ -80,8 +95,10 @@ def newpty():
 		log.info("Running on linux - using pty to create a pty.")
 	else:
 		raise SystemError("Unknown OS, cant create a pty.")
-
+loop = None
 async def main():
+	global loop
+	loop = asyncio.get_running_loop()
 	log.info("Hello, World!")
 	log.info("Initializing supabase")
 	supabase = await create_supabase()
@@ -89,25 +106,26 @@ async def main():
 	sch = supabase.channel(str(code))
 	def handle_joins(e):
 		terminals = {} # <id>: <pty>
-		def reader(id):
+		def reader(id, loop):
 			nonlocal terminals
 			while id in terminals:
 				content = terminals[id].read() # might block, thats why we use a thread for this
-				asyncio.create_task(vch.send_broadcast(
+				asyncio.run_coroutine_threadsafe(vch.send_broadcast(
 					"contentupd",
 					{"id": id,
-	  				 "content": content}
-				))
+	  				 "content": content},
+				),loop)
 				time.sleep(1/50) # 1/50th of a second delay so supabase is happy
 		def handle(payload):
+			global loop
 			nonlocal terminals
 			print(payload)
 			if payload["payload"]["type"] == "new":
-				terminals["payload"]["id"] = newpty()
-				threading.Thread(reader,daemon=True,args=(terminals["payload"]["id"],)).start()
+				terminals[payload["payload"]["id"]] = newpty()
+				threading.Thread(target=reader,daemon=True,args=(payload["payload"]["id"],loop)).start()
 			elif payload["payload"]["type"] == "resize":
-				for i in terminals:
-					terminals[i].resize(int(payload["payload"]["w"]),int(payload["payload"]["h"]))
+				if payload["payload"]["id"] in terminals:
+					terminals[payload["payload"]["id"]].resize(int(payload["payload"]["w"]),int(payload["payload"]["h"]))
 			elif payload["payload"]["type"] == "delete":
 				if payload["payload"]["id"] in terminals:
 					terminals[payload["payload"]["id"]].dispose()
@@ -117,11 +135,30 @@ async def main():
 					terminals[payload["payload"]["id"]].write(base64.b64decode(payload["payload"]["text"]))
 				else:
 					pass #??????????????????????????????????????????????
-		def handle_leave(key, current_presence, left_presence):
+		def handle_beat(payload):
+			nonlocal t
+			# required function to know that the client LEFT.
+			# cuz i cant rely on a "leave" broadcast.
+			# typically, a beat is every 3s.
+			t = time.time()
+		def server_beat():
+			nonlocal t
+			# give the client a bit of time to actually start beating.
+			# latency is not a mother anyway
+			time.sleep(10)
+			t = time.time()
+			# server's local heartbeat system.
+			# if no heartbeat was found in 17s, dispose all terminals
+			while time.time() - t < 17:
+				time.sleep(1)
+			# uh oh! client left.
+			handle_leave()
+		def handle_leave(*e):
 			nonlocal terminals
-			for i in terminals: # dispose all terminals.
+			for i in terminals.copy(): # dispose all terminals.
 				terminals[i].dispose()
 				del terminals[i]
+			log.info("Client left.")
 		def onsub_vert(status, err):
 			if status == "SUBSCRIBED":
 				asyncio.create_task(sch.send_broadcast(
@@ -132,7 +169,9 @@ async def main():
 		vertex = secrets.token_hex(24)
 		log.info("A client just joined!")
 		vch = supabase.channel(vertex)
-		asyncio.create_task(vch.on_presence_leave(callback=handle_leave).on_broadcast(event="action", callback=handle).subscribe(onsub_vert))
+		t = time.time()
+		asyncio.create_task(vch.on_presence_leave(callback=handle_leave).on_broadcast(event="beat",callback=handle_beat).on_broadcast(event="action", callback=handle).subscribe(onsub_vert))
+		threading.Thread(target=server_beat).start()
 	def onsub(status, err):
 		if status == "SUBSCRIBED":
 			log.info(f"Ready")

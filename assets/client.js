@@ -1,9 +1,9 @@
 activetab = null
 const client = supabase.createClient('https://lfetrsnlliovdavlnejg.supabase.co', 'sb_publishable_H_1KsFUculPC6j78TcMAdg_0sXxxnTl')
-
+var vertex = null
 mapping = {}
 idmap = {}
-function newtabadd(vertex) {
+function newtabadd() {
 	var page = document.createElement("div")
 	var term = new Terminal({
 	theme: {
@@ -37,6 +37,7 @@ function newtabadd(vertex) {
 	var img = document.createElement("img")
 	var title = document.createElement("div")
 	var close = document.createElement("button")
+	var id = crypto.randomUUID()
 	title.classList.add("title")
 	close.classList.add("close")
 	close.innerText = "X"
@@ -57,7 +58,14 @@ function newtabadd(vertex) {
 	term.open(page)
 	idmap[id] = term
 	mapping[tab] = page
-
+	term.onData(data => {
+		var b64 = btoa(data)
+		vertex.send({
+			type: "broadcast",
+			event: "action",
+			payload: { "type": "write", "id": id, "text": b64 }, // send base64 to server.
+		})
+	});
 	tab.onclick = function() {
 	  	var things = document.getElementsByClassName("active")
 		
@@ -66,6 +74,12 @@ function newtabadd(vertex) {
 	  	}
 	  	tab.classList.add("active")
 	  	page.classList.add("active")
+		fitAddon.fit() // re-fit
+		vertex.send({
+			type: "broadcast",
+			event: "action",
+			payload: { "type": "resize", "id": id, "w": term.cols, "h": term.rows },
+		})
 	}
 	close.onclick = function(e) {
 	  	e.stopPropagation();
@@ -78,8 +92,12 @@ function newtabadd(vertex) {
 			document.getElementById("tabs2").lastChild.classList.add("active")
 			document.getElementById("views").lastChild.classList.add("active")
 	  	}
+		vertex.send({
+			type: "broadcast",
+			event: "action",
+			payload: { "type": "delete", "id": id }, // deletion
+		})
 	}
-	var id = crypto.randomUUID()
 	const fitAddon = new FitAddon.FitAddon();
 	term.loadAddon(fitAddon);
 	vertex.send({
@@ -87,13 +105,26 @@ function newtabadd(vertex) {
 		event: "action",
 		payload: { "type": "new", "id": id }, // Client provides the id, not server.
 	})
-	
+	prevrows = 0
+	prevcols = 0
 	document.getElementById("views").appendChild(page)
 	window.addEventListener("resize",function() {
 		fitAddon.fit()
+		if (term.rows !== prevrows || term.cols !== prevcols) {
+			vertex.send({
+				type: "broadcast",
+				event: "action",
+				payload: { "type": "resize", "id": id, "w": term.cols, "h": term.rows }, // Resize
+			})
+		}
 	})
 	requestAnimationFrame(function() {
 		fitAddon.fit()
+		vertex.send({
+			type: "broadcast",
+			event: "action",
+			payload: { "type": "resize", "id": id, "w": term.cols, "h": term.rows },
+		})
 	})
 }
 
@@ -109,7 +140,7 @@ document.getElementById("connectbtn").onclick = function() {
 		const channel = client.channel(code)
 		channel.on("broadcast", { event: "token" }, (payload) => {
 			console.log(payload)
-			const vertex = client.channel(payload["payload"]["token"])
+			vertex = client.channel(payload["payload"]["token"])
 			// disconnect from first
 			client.removeChannel(channel)
 			vertex.on("broadcast", { event: "contentupd" }, (payload) => {
@@ -118,8 +149,16 @@ document.getElementById("connectbtn").onclick = function() {
 				idmap[id].write(content)
 			}).subscribe((status) => {
 				if (status === "SUBSCRIBED") {
-					newtabadd(vertex)
+					newtabadd()
 					document.getElementById("connectmodalbg").style.display = "none"
+					setInterval(function() {
+						vertex.send({
+							type: "broadcast",
+							event: "beat",
+							payload: { },
+						})
+					},3000)
+
 				}
 			})
 		}).subscribe((status) => {
