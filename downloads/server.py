@@ -192,7 +192,6 @@ async def main():
 		def handle(payload):
 			global loop
 			nonlocal terminals
-			print(payload)
 			if payload["payload"]["type"] == "new":
 				terminals[payload["payload"]["id"]] = newpty()
 				threading.Thread(target=reader,daemon=True,args=(payload["payload"]["id"],loop)).start()
@@ -221,8 +220,8 @@ async def main():
 			time.sleep(10)
 			t = time.time()
 			# server's local heartbeat system.
-			# if no heartbeat was found in 17s, dispose all terminals
-			while time.time() - t < 17:
+			# if no heartbeat was found in 30s, dispose all terminals
+			while time.time() - t < 30:
 				time.sleep(1)
 			# uh oh! client left.
 			handle_leave()
